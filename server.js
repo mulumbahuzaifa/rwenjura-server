@@ -10,6 +10,7 @@ import userRouter from "./Routes/UserRoutes.js";
 import postRouter from "./Routes/postsRoutes.js";
 import multer from "multer";
 import path from "path";
+import {fileURLToPath} from 'url';
 
 dotenv.config();
 connectDatabase();
@@ -20,6 +21,8 @@ app.use(
     origin: "*",
   })
 );
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use("/images", express.static(path.join(__dirname, "/images")));
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

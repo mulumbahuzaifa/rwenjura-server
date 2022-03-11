@@ -2,6 +2,9 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import Product from "./../Models/ProductModel.js";
 import { admin, protect } from "./../Middleware/AuthMiddleware.js";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const productRoute = express.Router();
 
@@ -90,6 +93,104 @@ productRoute.post(
     }
   })
 );
+// PRODUCT DAYS
+productRoute.post(
+  "/:id/days",
+  protect,
+  admin,
+  asyncHandler(async (req, res) => {
+    const { name, startingTime, endTime, description, tags } = req.body;
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      const day = {
+        name,
+        startingTime,
+        endTime,
+        description,
+        tags,
+      };
+
+      product.days.push(day);
+      product.numDays = product.days.length;
+
+      await product.save();
+      res.status(201).json({ message: "Day Added" });
+    } else {
+      res.status(404);
+      throw new Error("Product not Found");
+    }
+  })
+);
+// PRODUCT IMAGES
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// app.use("/images", express.static(path.join(__dirname, "/images")));
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, req.body.name);
+  },
+});
+const upload = multer({ storage: storage });
+productRoute.post(
+  "/:id/images",
+  upload.single("file"),
+  asyncHandler(async (req, res) => {
+    const { image } = req.body;
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      const img = {
+        image,
+      };
+      product.images.push(img);
+      await product.save();
+      res.status(200).json("File has been uploaded");
+    } else {
+      res.status(404);
+      throw new Error("Product not Found");
+    }
+  })
+);
+
+// PRODUCT BOOKING
+productRoute.post(
+  "/:id/booking",
+  // protect,
+  asyncHandler(async (req, res) => {
+    const { fullName, email, phone, travellers, country, date, message } =
+      req.body;
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      const booking = {
+        fullName,
+        email,
+        phone,
+        travellers: Number(travellers),
+        country,
+        date,
+        message,
+        // user: req.user._id,
+      };
+
+      product.bookings.push(booking);
+      product.numBookings = product.bookings.length;
+      product.travellers =
+        product.bookings.reduce((acc, item) => item.travellers + acc, 0) /
+        product.bookings.length;
+
+      await product.save();
+      res.status(201).json({ message: "Package Booked" });
+    } else {
+      res.status(404);
+      throw new Error("Package not Found");
+    }
+  })
+);
 
 // DELETE PRODUCT
 productRoute.delete(
@@ -114,7 +215,18 @@ productRoute.post(
   protect,
   admin,
   asyncHandler(async (req, res) => {
-    const { name, price, description, image, countInStock } = req.body;
+    const {
+      name,
+      price,
+      description,
+      image,
+      tag,
+      departure,
+      country,
+      more_desc,
+      isFeatured,
+      isPopular,
+    } = req.body;
     const productExist = await Product.findOne({ name });
     if (productExist) {
       res.status(400);
@@ -125,8 +237,13 @@ productRoute.post(
         price,
         description,
         image,
-        countInStock,
-        user: req.user._id,
+        tag,
+        departure,
+        country,
+        more_desc,
+        isFeatured,
+        isPopular,
+        // user: req.user._id,
       });
       if (product) {
         const createdproduct = await product.save();

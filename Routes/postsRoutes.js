@@ -46,6 +46,33 @@ postRouter.put(
   })
 );
 
+// POST COMMENT
+postRouter.post(
+  "/:id/comment",
+  protect,
+  asyncHandler(async (req, res) => {
+    const { comment } = req.body;
+    const post = await Post.findById(req.params.id);
+
+    if (post) {
+      const cmt = {
+        name: req.user.name,
+        comment,
+        user: req.user._id,
+      };
+
+      post.comments.push(cmt);
+      post.numComments = post.comments.length;
+
+      await post.save();
+      res.status(201).json({ message: "Comment Added" });
+    } else {
+      res.status(404);
+      throw new Error("post not Found");
+    }
+  })
+);
+
 // DELETE POST
 postRouter.delete(
   "/:id",

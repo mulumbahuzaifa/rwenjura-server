@@ -16,6 +16,45 @@ const reviewSchema = mongoose.Schema(
   }
 );
 
+const bookingSchema = mongoose.Schema(
+  {
+    fullName: { type: String, required: true },
+    travellers: { type: Number, required: true },
+    phone: { type: String, required: true },
+    email: { type: String, required: true },
+    country: { type: String, required: true },
+    date: { type: Date, required: true },
+    message: { type: String, required: false },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const imageSchema = mongoose.Schema(
+  {
+    image: {
+      type: String,
+      required: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+const daysSchema = mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    startingTime: { type: String, required: true },
+    endTime: { type: String, required: true },
+    description: { type: String, required: true },
+    tags: { type: String, required: false },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 const productSchema = mongoose.Schema(
   {
     name: {
@@ -28,6 +67,7 @@ const productSchema = mongoose.Schema(
     },
     image: {
       type: String,
+      required: true,
     },
     description: {
       type: String,
@@ -39,14 +79,32 @@ const productSchema = mongoose.Schema(
     },
 
     reviews: [reviewSchema],
+    bookings: [bookingSchema],
+    days: [daysSchema],
+    images: [imageSchema],
     rating: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
+    },
+    travellers: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    numDays: {
+      type: Number,
+      required: false,
       default: 0,
     },
     numReviews: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
+    },
+    numBookings: {
+      type: Number,
+      required: false,
       default: 0,
     },
     price: {
@@ -56,7 +114,7 @@ const productSchema = mongoose.Schema(
     },
     price_less: {
       type: Number,
-      required: true,
+      required: false,
       default: 0,
     },
     more_desc: {
@@ -66,6 +124,16 @@ const productSchema = mongoose.Schema(
     country: {
       type: String,
       required: true,
+    },
+    isFeatured: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    isPopular: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
   },
   {
